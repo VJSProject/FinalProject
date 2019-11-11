@@ -1,8 +1,7 @@
-import jdk.swing.interop.SwingInterOpUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class GeneBankCreateBtree {
@@ -35,7 +34,10 @@ public class GeneBankCreateBtree {
                         if(line.contains("//")){
                             dnaSection =false;
                         }else{
-                            System.out.println(line);
+                            String str = line.replaceAll("\\d","");
+                            String str2 = str.replaceAll("\\s", "");
+                            String[] tokens = str2.split("(?<=\\G.{" + args[3] + "})");
+                            System.out.println(Arrays.toString(tokens));
                         }
                     }
                 }
