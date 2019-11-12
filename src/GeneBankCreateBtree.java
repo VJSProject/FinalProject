@@ -25,9 +25,12 @@ public class GeneBankCreateBtree {
 // reading file to parse DNA code//issue when there are two lines of DNA
         try {
             boolean dnaSection = false;
+            int i = 1;
             Scanner sc = new Scanner(new File(args[2]));
             while(sc.hasNext()){
                 if(sc.nextLine().contains("ORIGIN")){
+                    System.out.println("DNA " + i);
+                    i++;
                     dnaSection = true;
                     while(dnaSection){
                         String line = sc.nextLine();
@@ -41,11 +44,6 @@ public class GeneBankCreateBtree {
                         }
                     }
                 }
-//                if(sc.nextLine() == "ORIGIN"){
-//                    dnaSequence = sc.nextLine();
-//                    System.out.println(dnaSequence);
-//                    System.exit(0);
-//                }
             }
 
         } catch (Exception e) {
