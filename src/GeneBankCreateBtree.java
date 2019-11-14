@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class GeneBankCreateBtree {
 
     private static String dnaSequence;
+    private static String dnaString;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -22,34 +23,44 @@ public class GeneBankCreateBtree {
         if(args[1].equals('0')){
 //            If degree is zero, we need to find degree
         }
-// reading file to parse DNA code//issue when there are two lines of DNA
+// reading file to parse DNA code
+        dnaString = createLongString(args[2]);
+        System.out.println(dnaString);
+
+    }
+
+    private static String createLongString(String filename) {
+        String bigString = "";
         try {
             boolean dnaSection = false;
             int i = 1;
-            Scanner sc = new Scanner(new File(args[2]));
+            Scanner sc = new Scanner(new File(filename));
             while(sc.hasNext()){
                 if(sc.nextLine().contains("ORIGIN")){
-                    System.out.println("DNA " + i);
+                    bigString += "DNA" + i + " ";
                     i++;
                     dnaSection = true;
                     while(dnaSection){
                         String line = sc.nextLine();
                         if(line.contains("//")){
+                            bigString += "\n";
                             dnaSection =false;
                         }else{
-                            String str = line.replaceAll("\\d","");
-                            String str2 = str.replaceAll("\\s", "");
-                            String[] tokens = str2.split("(?<=\\G.{" + args[3] + "})");
-                            System.out.println(Arrays.toString(tokens));
+                            String str = line.replaceAll("(\\d|\\s)","");
+                            bigString += str;
                         }
                     }
+                }else{
+                    //test4.gbk has no DNA string, what should we do here
+                    System.out.println("No DNA");
+                    System.exit(0);
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        return bigString;
     }
 
     private static void help() {
