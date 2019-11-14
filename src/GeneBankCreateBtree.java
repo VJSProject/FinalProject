@@ -44,16 +44,13 @@ public class GeneBankCreateBtree {
                         String line = sc.nextLine();
                         if(line.contains("//")){
                             bigString += "\n";
+                            System.out.println(bigString.length());
                             dnaSection =false;
                         }else{
                             String str = line.replaceAll("(\\d|\\s)","");
                             bigString += str;
                         }
                     }
-                }else{
-                    //test4.gbk has no DNA string, what should we do here
-                    System.out.println("No DNA");
-                    System.exit(0);
                 }
             }
         } catch (Exception e) {
