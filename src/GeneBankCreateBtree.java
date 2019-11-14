@@ -44,7 +44,6 @@ public class GeneBankCreateBtree {
                         String line = sc.nextLine();
                         if(line.contains("//")){
                             bigString += "\n";
-                            System.out.println(bigString.length());
                             dnaSection =false;
                         }else{
                             String str = line.replaceAll("(\\d|\\s)","");
