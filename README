@@ -1,0 +1,7 @@
+Tasks:
+
+1. Parse file
+    -Break it into strings of length k
+    -convert each token into binary
+    -store long data type in a tree object
+    -add the new tree object to the BTree
