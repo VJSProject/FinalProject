@@ -1,3 +1,10 @@
+/**
+ * Uses BTreeNodes to manage a BTree
+ * 
+ * @author Skip-Skip
+ *
+ * @param <T>
+ */
 public class BTree<T> {
 	
 	private int degree;
@@ -5,6 +12,10 @@ public class BTree<T> {
 	private int maxKeys;
 	private BTreeNode<T> root;
 	
+	/**
+	 * Constructor
+	 * @param degree
+	 */
 	public BTree (int degree)
 	{
 		this.degree = degree;
@@ -13,12 +24,21 @@ public class BTree<T> {
 		root = new BTreeNode<T>(degree);
 	}
 	
+	/**
+	 * Builds the tree using an array of generic TreeObjects
+	 * @param objects
+	 */
 	public void buildTree(TreeObject<T>[] objects)
 	{
 		for(TreeObject<T> o: objects) {
 			insertObject(o);
 		}
 	}
+	
+	/**
+	 * Builds the tree using an array of generic keys
+	 * @param keys
+	 */
 	public void buildTree(T[] keys)
 	{
 		for(T k: keys) {
@@ -26,9 +46,11 @@ public class BTree<T> {
 		}
 	}
 	
+	/**
+	 * Inserts TreeObject into the BTree (in order)
+	 * @param obj
+	 */
 	public void insertObject(TreeObject<T> obj) {
-			
-		
 		
 			BTreeNode<T> n = root;
 			//descends to correct leaf node
@@ -46,34 +68,25 @@ public class BTree<T> {
 					n = n.getChild(i);
 				}
 			}
-			//try to add object, otherwise split
+			//try to add object, split if full
 			try {
 				n.addObject(obj);
 			} catch (ArrayIndexOutOfBoundsException e) {
-				System.out.println(e.getMessage());
-				/*if(n == root) {
-					root.setParent(new BTreeNode<T>(degree));
-					root.getParent().addChild(root);
-					splitNode(root);
-					root = root.getParent();
-					root.setLeaf(false);
-					insertObject(obj);
-				}
-				else {
-					splitNode(n);
-					insertObject(obj);
-				}*/
 				splitNode(n);
 				insertObject(obj);
-			}
-			
-		
+			}		
 	}
 
+	/**
+	 * Inserts a key into the BTree (in order)
+	 * @param key
+	 */
 	public void insertKey(T key) {
 		insertObject(new TreeObject<T>(key));
 	}
 	
+	@Override
+	//TODO - This doesn't print properly yet
 	public String toString() {
 		String s = "";
 		BTreeNode<T> n = root;
@@ -90,82 +103,57 @@ public class BTree<T> {
 		return s;
 	}
 	
+	/**
+	 * Splits the node
+	 * @param node
+	 */
 	private void splitNode(BTreeNode<T> node) {
+		//if root is full, split it
 		if(this.root.getNumObjects() == this.maxKeys)
 		{
 			splitRoot();
 		}
+		//if parent is full, split it
 		else if (node.getParent().getNumObjects() == this.maxKeys)
 		{
 			splitNode(node.getParent());
 		}
+		//split
 		else {
-		BTreeNode<T> newChild = new BTreeNode<T>(degree);
-		while(node.getNumObjects() > maxKeys/2+1)
-		{
-			newChild.addObject(node.removeLast());
-		}
-		TreeObject<T> midObj = node.removeLast();
-		node.getParent().addObject(midObj);			
-		node.getParent().addChild(newChild);
-		newChild.setParent(node.getParent());
-		//if internal node, split children
-		if(node.getNumChildren() != 0) {
-			
-			int totalChildren = node.getNumChildren();
-			int rightPosition = node.getNumChildren() / 2;
-			for(;rightPosition < totalChildren; rightPosition ++)
+			//puts half of objects in new child
+			BTreeNode<T> newChild = new BTreeNode<T>(degree);
+			while(node.getNumObjects() > maxKeys/2+1)
 			{
-				BTreeNode<T> move = node.removeChild(rightPosition);
-				move.setParent(newChild);
-				newChild.addChild(move);
+				newChild.addObject(node.removeLast());
 			}
-		}
+			TreeObject<T> midObj = node.removeLast();
+			//puts middle object in parent. Updates pointers
+			node.getParent().addObject(midObj);			
+			node.getParent().addChild(newChild);
+			newChild.setParent(node.getParent());
+			//if internal node, split children
+			if(node.getNumChildren() != 0) {
+				
+				int totalChildren = node.getNumChildren();
+				int rightPosition = node.getNumChildren() / 2;
+				for(;rightPosition < totalChildren; rightPosition ++)
+				{
+					BTreeNode<T> move = node.removeChild(rightPosition);
+					move.setParent(newChild);
+					newChild.addChild(move);
+				}
+			}
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	/**
+	 * Splits root
+	 */
 	private void splitRoot() {
 		root.setParent(new BTreeNode<T>(degree));
 		root.getParent().addChild(root);
 		BTreeNode<T> left = root;
 		root = root.getParent();
 		splitNode(left);
-
-		/*
-		if(left.getNumChildren() != 0) {
-			BTreeNode<T>[] leftChildren = left.getChildren();
-			BTreeNode<T>[] rightChildren = (BTreeNode<T>[])new BTreeNode[degree*2];
-			
-			int totalChildren = left.getNumChildren();
-			int rightPosition = left.getNumChildren() / 2;
-			for(;rightPosition < totalChildren; rightPosition ++)
-			{
-				BTreeNode<T> move = left.removeChild(rightPosition);
-				move.setParent(root.getChild(1));
-				root.getChild(1).addChild(move);
-			}
-		}
-		*/
-	}
-	@SuppressWarnings("unchecked")
-	private void splitInternal(BTreeNode<T> node) {
-		BTreeNode<T> left = node;
-		BTreeNode<T> parent = node.getParent();
-		splitNode(left);
-
-		if(left.getNumChildren() != 0) {
-			BTreeNode<T>[] leftChildren = left.getChildren();
-			BTreeNode<T>[] rightChildren = (BTreeNode<T>[])new BTreeNode[degree*2];
-			
-			int totalChildren = left.getNumChildren();
-			int rightPosition = left.getNumChildren() / 2;
-			for(;rightPosition < totalChildren; rightPosition ++)
-			{
-				BTreeNode<T> move = left.removeChild(rightPosition);
-				move.setParent(root.getChild(1));
-				root.getChild(1).addChild(move);
-			}
-		}
 	}
 }

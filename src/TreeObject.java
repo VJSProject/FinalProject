@@ -19,6 +19,11 @@ public class TreeObject<T> {
         frequency++;
     }
     
+    /**
+     * compares the keys string values
+     * @param obj
+     * @return -1 if comparatively less than, 1 if greater, 0 if equal
+     */
     public int compareTo(TreeObject<T> obj) {
     	
     	if(this.key.toString().compareTo(obj.key.toString()) < 0)
@@ -29,6 +34,7 @@ public class TreeObject<T> {
     		return 0;
     }
     
+    @Override
     public String toString() {
     	return this.key.toString();
     }

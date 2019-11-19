@@ -1,3 +1,10 @@
+/**
+ * Stores object data and pointers to children/parent nodes
+ * 
+ * @author Skip-Skip
+ *
+ * @param <T>
+ */
 public class BTreeNode<T> {
 	
 	private TreeObject<T>[] objects;
@@ -82,9 +89,19 @@ public class BTreeNode<T> {
 		}
 	}
 	
+	/**
+	 * The child at the specified index
+	 * @param index
+	 * @return child at index
+	 */
 	public BTreeNode<T> getChild(int index) {
 		return children[index];
 	}
+	
+	/**
+	 * Removes the last object from the list of stored objects
+	 * @return removed TreeObject
+	 */
 	public TreeObject<T> removeLast(){
 		TreeObject<T> obj = objects[numObjects-1];
 		objects[numObjects-1] = null;
@@ -92,36 +109,60 @@ public class BTreeNode<T> {
 		return obj;
 	}
 	
+	/**
+	 * 
+	 * @return Number of keys/TreeObjects stored in this node
+	 */
 	public int getNumObjects() {
 		return this.numObjects;
 	}
 	
+	/**
+	 * 
+	 * @return Number of children for this node
+	 */
 	public int getNumChildren() {
 		return this.numChildren;
 	}
-	public void setParent(BTreeNode<T> node)
+	
+	/**
+	 * Sets this nodes parent pointer
+	 * @param parent
+	 */
+	public void setParent(BTreeNode<T> parent)
 	{
-		this.parent = node;
+		this.parent = parent;
 	}
 	
+	/**
+	 * 
+	 * @return BTreeNode representing this nodes parent
+	 */
 	public BTreeNode<T> getParent()
 	{
 		return this.parent;
 	}
 
+	/**
+	 * 
+	 * @return array of BTreeNodes representing this nodes children
+	 */
 	public BTreeNode<T>[] getChildren() {
 		return this.children;
 	}
-/*
-	public void setChildren(BTreeNode<T>[] children) {
-		this.children = children;
-		this.numChildren = children.length;
-	}
-*/
+
+	/**
+	 * 
+	 * @return true if this node has no children
+	 */
 	public boolean isLeaf() {
 		return isLeaf;
 	}
 
+	/**
+	 * Inserts a new child under this node (in order)
+	 * @param node
+	 */
 	public void addChild(BTreeNode<T> node) {
 		if(this.numObjects == 0) {
 			this.children[0] = node;
@@ -156,6 +197,11 @@ public class BTreeNode<T> {
 		}
 	}
 	
+	/**
+	 * Removes child from specified index
+	 * @param index
+	 * @return the child removed
+	 */
 	public BTreeNode<T> removeChild(int index){
 		BTreeNode<T> c = this.children[index];
 		this.children[index] = null;
@@ -167,6 +213,7 @@ public class BTreeNode<T> {
 		return c;
 	}
 	
+	@Override
 	public String toString() {
 		String s = "[ ";
 		for(int i = 0; i < this.numObjects; i++) {
