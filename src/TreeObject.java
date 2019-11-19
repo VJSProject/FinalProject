@@ -7,7 +7,7 @@ public class TreeObject<T> {
         this.key = key;
         this.frequency = 1;
     }
-
+    
     public T getKey(){
         return this.key;
     }

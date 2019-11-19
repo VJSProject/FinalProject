@@ -27,7 +27,7 @@ public class BTree<T> {
 	}
 	
 	public void insertObject(TreeObject<T> obj) {
-		
+			
 		
 		
 			BTreeNode<T> n = root;
