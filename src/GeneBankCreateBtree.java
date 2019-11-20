@@ -30,11 +30,12 @@ public class GeneBankCreateBtree {
             String[] lines = dnaString.split("\n");
             for(String line : lines){
                 //need to pass each line into as Btree
-                ArrayList<String> test = createKeyValues(line,args[1]);
+                ArrayList<Long> test = createKeyValues(line,args[1]);
                 System.out.println(test);
             }
         }else {
-            createKeyValues(dnaString, args[1]);
+            ArrayList<Long> test = createKeyValues(dnaString, args[1]);
+            System.out.println(test);
         }
     }
 
@@ -70,8 +71,8 @@ public class GeneBankCreateBtree {
 
     //takes dna string and separates it into substrings the size of arg "key"
     //those substrings are then converted into binary
-    private static ArrayList<String> createKeyValues(String dnaString, String key) {
-    	ArrayList<String> tokens = new ArrayList<String>();
+    private static ArrayList<Long> createKeyValues(String dnaString, String key) {
+    	ArrayList<Long> tokens = new ArrayList<Long>();
     	for(int i = 0; i< dnaString.length(); i++) {
     		int size = Integer.parseInt(key);
     		if(i+size < dnaString.length()){
@@ -82,7 +83,8 @@ public class GeneBankCreateBtree {
                     hold = hold.replaceAll("[cC]", "01");
                     hold = hold.replaceAll("[gG]", "10");
                     hold = hold.replaceAll("[tT]", "11");
-                    tokens.add(hold);
+
+                    tokens.add(Long.parseLong(hold,2));
                 }
     		}
     	}
