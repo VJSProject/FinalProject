@@ -26,17 +26,19 @@ public class GeneBankCreateBtree {
         }
 // reading file to parse DNA code
         dnaString = createLongString(args[2]);
-        if(dnaString.lines().count() > 1){
-            String[] lines = dnaString.split("\n");
-            for(String line : lines){
-                //need to pass each line into as Btree
-                ArrayList<Long> test = createKeyValues(line,args[1]);
-                System.out.println(test);
-            }
-        }else {
-            ArrayList<Long> test = createKeyValues(dnaString, args[1]);
-            System.out.println(test);
-        }
+        ArrayList<Long> test = createKeyValues(dnaString, args[1]);
+        System.out.println(test);
+//        if(dnaString.lines().count() > 1){
+//            String[] lines = dnaString.split("\n");
+//            for(String line : lines){
+//                //need to pass each line into as Btree
+//                ArrayList<Long> test = createKeyValues(line,args[1]);
+//                System.out.println(test);
+//            }
+//        }else {
+//            ArrayList<Long> test = createKeyValues(dnaString, args[1]);
+//            System.out.println(test);
+//        }
     }
 
     private static String createLongString(String filename) {
@@ -47,13 +49,10 @@ public class GeneBankCreateBtree {
             Scanner sc = new Scanner(new File(filename));
             while(sc.hasNext()){
                 if(sc.nextLine().contains("ORIGIN")){
-//                    bigString += "DNA" + i + " ";
-//                    i++;
                     dnaSection = true;
                     while(dnaSection){
                         String line = sc.nextLine();
                         if(line.contains("//")){
-                            bigString += "\n";
                             dnaSection =false;
                         }else{
                             String str = line.replaceAll("(\\d|\\s)","");
