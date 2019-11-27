@@ -7,8 +7,9 @@ import java.util.ArrayList;
 
 public class GeneBankCreateBtree {
 
-    private static String dnaSequence;
-    private static String dnaString;
+    private static String dnaString, filename;
+    private static BTreeNode tree;
+    private static int cache, degree, seqLength, cacheSize, debugLevel;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -24,21 +25,27 @@ public class GeneBankCreateBtree {
         if(args[1].equals('0')){
 //            If degree is zero, we need to find degree
         }
-// reading file to parse DNA code
-        dnaString = createLongString(args[2]);
-        ArrayList<Long> test = createKeyValues(dnaString, args[1]);
-        System.out.println(test);
-//        if(dnaString.lines().count() > 1){
-//            String[] lines = dnaString.split("\n");
-//            for(String line : lines){
-//                //need to pass each line into as Btree
-//                ArrayList<Long> test = createKeyValues(line,args[1]);
-//                System.out.println(test);
-//            }
-//        }else {
-//            ArrayList<Long> test = createKeyValues(dnaString, args[1]);
-//            System.out.println(test);
-//        }
+        if(args.length == 6){
+            cacheSize = Integer.parseInt(args[4]);
+            debugLevel = Integer.parseInt(args[5]);
+        }
+        cache = Integer.parseInt(args[0]);
+        degree = Integer.parseInt(args[1]);
+        filename = args[2];
+        seqLength = Integer.parseInt(args[3]);
+
+//        reading file to parse DNA code
+        dnaString = createLongString(filename);
+        long[] test = createKeyValues(dnaString,seqLength);
+        System.out.println(Arrays.toString(test));
+        int j = 0;
+        for(Long i : test){
+            System.out.println(i);
+            if(j == 5){
+                System.exit(0);
+            }
+            j++;
+        }
     }
 
     private static String createLongString(String filename) {
@@ -70,10 +77,11 @@ public class GeneBankCreateBtree {
 
     //takes dna string and separates it into substrings the size of arg "key"
     //those substrings are then converted into binary
-    private static ArrayList<Long> createKeyValues(String dnaString, String key) {
-    	ArrayList<Long> tokens = new ArrayList<Long>();
+    private static long[] createKeyValues(String dnaString, int key) {
+        int arrLength = dnaString.length() - key;
+        long[] tokens = new long[arrLength];
     	for(int i = 0; i< dnaString.length(); i++) {
-    		int size = Integer.parseInt(key);
+    		int size = key;
     		if(i+size < dnaString.length()){
     		    String dnaSubstring = dnaString.substring(i, i + size);
     		    if(!dnaSubstring.contains("n")) {
@@ -83,7 +91,7 @@ public class GeneBankCreateBtree {
                     hold = hold.replaceAll("[gG]", "10");
                     hold = hold.replaceAll("[tT]", "11");
 
-                    tokens.add(Long.parseLong(hold,2));
+                    tokens[i] = Long.parseLong(hold,2);
                 }
     		}
     	}
