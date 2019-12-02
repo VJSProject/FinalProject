@@ -8,8 +8,8 @@ import java.util.ArrayList;
 public class GeneBankCreateBtree {
 
     private static String dnaString, filename;
-    private static BTreeNode tree;
     private static int cache, degree, seqLength, cacheSize, debugLevel;
+    private static BTree<Object> tree;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -36,18 +36,22 @@ public class GeneBankCreateBtree {
 
 //        reading file to parse DNA code
         dnaString = createLongString(filename);
-        long[] test = createKeyValues(dnaString,seqLength);
-        System.out.println(Arrays.toString(test));
-        int j = 0;
-        for(Long i : test){
-            System.out.println(i);
-            if(j == 5){
-                System.exit(0);
-            }
-            j++;
+        long[] keys = createKeyValues(dnaString,seqLength);
+        System.out.println(Arrays.toString(keys));
+        tree = new BTree<>(degree);
+        for(Long i : keys){
+            TreeObject leaf = new TreeObject(i);
+            tree.insertObject(leaf);
+
         }
+        System.out.println(tree.toString());
     }
 
+    /**
+     * Reads in file name and parse the DNA string into one single string
+     * @param filename
+     * @return
+     */
     private static String createLongString(String filename) {
         String bigString = "";
         try {
@@ -75,8 +79,12 @@ public class GeneBankCreateBtree {
         return bigString;
     }
 
-    //takes dna string and separates it into substrings the size of arg "key"
-    //those substrings are then converted into binary
+    /**
+     * Takes a DNA string and splits it into key length and adds it to a long array.
+     * @param dnaString
+     * @param key
+     * @return
+     */
     private static long[] createKeyValues(String dnaString, int key) {
         int arrLength = dnaString.length() - key;
         long[] tokens = new long[arrLength];
@@ -99,7 +107,7 @@ public class GeneBankCreateBtree {
     }
 
     private static void help() {
-        System.out.println("Please follow the below format");
+        System.out.println("Usage:");
         System.out.println("GeneBankCreateBtree <0/1(no/with Cache)> <degree> <gbk file> <sequence length> [<cache size>]" +
                 " [<cache size>]");
         System.exit(0);
