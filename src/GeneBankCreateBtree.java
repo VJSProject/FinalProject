@@ -10,20 +10,19 @@ public class GeneBankCreateBtree {
     private static String dnaSequence;
     private static String dnaString;
 
+    private static boolean usingCache;
+	private static int degree;
+	private static String gbkFile;
+	private static int seqLength;
+	private static int cacheSize;
+	private static int debugLevel = -1;
+	
+	private static BTree tree;
+	
     public static void main(String[] args) throws FileNotFoundException {
 
-        if(args.length < 4){
-            help();
-        }
-
-        if(Integer.parseInt(args[0]) > 1){
-            System.out.println("Incorrect Usage( 0 or 1 required)");
-            help();
-        }
-
-        if(args[1].equals('0')){
-//            If degree is zero, we need to find degree
-        }
+    	parseArgs(args);
+    	
 // reading file to parse DNA code
         dnaString = createLongString(args[2]);
         if(dnaString.lines().count() > 1){
@@ -89,6 +88,45 @@ public class GeneBankCreateBtree {
         return tokens;
     }
 
+    /**
+     * parses main method arguments
+     * @param args
+     */
+    private static void parseArgs(String[] args)
+    {
+    	if(args.length >= 4 && args.length <= 6){
+        	try {
+	            if(Integer.parseInt(args[0]) == 0)
+	            	usingCache = false;
+	            else if(Integer.parseInt(args[0]) == 1)
+	            	usingCache = true;
+	            else
+	            	throw new NumberFormatException("Incorrect Usage (0 or 1 required in cache parameter)");
+	            
+	            degree = Integer.parseInt(args[1]);
+	            gbkFile = args[2];
+	            seqLength = Integer.parseInt(args[3]);
+	            
+	            if(usingCache)
+	            	cacheSize = Integer.parseInt(args[4]);
+	            
+	            if(args.length == 6)
+	            {
+	            	debugLevel = Integer.parseInt(args[5]);
+	            	if(debugLevel < 0 || debugLevel > 1)
+	            		throw new NumberFormatException("Incorrect Usage (0 or 1 required in debug parameter)");
+	            }
+        	} catch (NumberFormatException e) {
+        		System.out.println(e.getMessage());
+        		help();
+        	}
+        }
+        else
+        {
+        	help();
+        }
+    }
+    
     private static void help() {
         System.out.println("Please follow the below format");
         System.out.println("GeneBankCreateBtree <0/1(no/with Cache)> <degree> <gbk file> <sequence length> [<cache size>]" +
