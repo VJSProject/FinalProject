@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * Uses BTreeNodes to manage a BTree
  * 
@@ -42,6 +44,13 @@ public class BTree<T> {
 	public void buildTree(T[] keys)
 	{
 		for(T k: keys) {
+			insertKey(k);
+		}
+	}
+	
+	public void buildTree(ArrayList<T> keys)
+	{
+		for (T k: keys) {
 			insertKey(k);
 		}
 	}
