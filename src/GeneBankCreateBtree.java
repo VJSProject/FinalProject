@@ -23,12 +23,16 @@ public class GeneBankCreateBtree {
 	
     public static void main(String[] args) throws FileNotFoundException {
 
+    	long start = System.currentTimeMillis();
     	parseArgs(args);
     	
     	if(degree == 0)
     		tree = new BTree<Long>(calculateOptimalDegree());
     	else
     		tree = new BTree<Long>(degree);
+    	
+    	if(usingCache)
+    		//tree.enableCache(cacheSize);
     	
     	//parses DNA sequences from file
         dnaStrings = createLongString(gbkFile);
@@ -41,7 +45,12 @@ public class GeneBankCreateBtree {
         
         tree.buildTree(keys);
         
-        System.out.println("Done bitch");
+        System.out.println("Done.");
+        System.out.println("Runtime: " + (System.currentTimeMillis()-start));
+        
+        
+        
+        
         /*
         if(dnaString.lines().count() > 1){
             String[] lines = dnaString.split("\n");
@@ -134,12 +143,15 @@ public class GeneBankCreateBtree {
     {
     	if(args.length >= 4 && args.length <= 6){
         	try {
+        		/* Cache usage args */
 	            if(Integer.parseInt(args[0]) == 0)
 	            	usingCache = false;
-	            else if(Integer.parseInt(args[0]) == 1)
+	            else if(Integer.parseInt(args[0]) == 1 && args.length > 4)
 	            	usingCache = true;
 	            else
-	            	throw new NumberFormatException("Incorrect Usage (0 or 1 required in cache parameter)");
+	            	throw new NumberFormatException("Incorrect Usage (0 or 1 required in cache parameter. Cache size required if using cache.)");
+	            if(usingCache)
+	            	cacheSize = Integer.parseInt(args[4]);
 	            
 	            degree = Integer.parseInt(args[1]);
 	            gbkFile = args[2];
@@ -147,8 +159,7 @@ public class GeneBankCreateBtree {
 	            if(seqLength < 1 || seqLength > 31)
 	            	throw new NumberFormatException("Error: sequence length should be within the range 1-31");
 	            
-	            if(usingCache)
-	            	cacheSize = Integer.parseInt(args[4]);
+	            
 	            
 	            if(args.length == 6)
 	            {
@@ -170,7 +181,7 @@ public class GeneBankCreateBtree {
     private static void help() {
         System.out.println("Please follow the below format");
         System.out.println("GeneBankCreateBtree <0/1(no/with Cache)> <degree> <gbk file> <sequence length> [<cache size>]" +
-                " [<cache size>]");
+                " [<debug level>]");
         System.exit(0);
     }
 }

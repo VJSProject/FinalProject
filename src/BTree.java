@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Uses BTreeNodes to manage a BTree
@@ -13,6 +15,8 @@ public class BTree<T> {
 	private int minKeys;
 	private int maxKeys;
 	private BTreeNode<T> root;
+	private Cache<TreeObject<T>> cache;
+	private boolean usingCache;
 	
 	/**
 	 * Constructor
@@ -24,6 +28,7 @@ public class BTree<T> {
 		this.minKeys = degree - 1;
 		this.maxKeys = (2*degree) - 1;
 		root = new BTreeNode<T>(degree);
+		usingCache = false;
 	}
 	
 	/**
@@ -61,6 +66,13 @@ public class BTree<T> {
 	 */
 	public void insertObject(TreeObject<T> obj) {
 		
+		boolean inCache = false;
+		if(usingCache) {
+			inCache = checkCache(obj);
+		}
+				
+		if(!inCache)
+		{
 			BTreeNode<T> n = root;
 			//descends to correct leaf node
 			boolean duplicate = false;
@@ -84,6 +96,7 @@ public class BTree<T> {
 				splitNode(n);
 				insertObject(obj);
 			}		
+		}
 	}
 
 	/**
@@ -164,5 +177,44 @@ public class BTree<T> {
 		BTreeNode<T> left = root;
 		root = root.getParent();
 		splitNode(left);
+	}
+	
+	public void enableCache(int cacheSize)
+	{
+		cache = new Cache<TreeObject<T>>(cacheSize);
+	}
+	
+	private boolean checkCache(TreeObject<T> check) 
+	{
+		LinkedList<TreeObject<T>> cacheList = cache.getCacheList();
+		//boolean searching = true;
+		Iterator<TreeObject<T>> iterator = cacheList.iterator();
+		//TreeObject<T> currentObj;
+		
+		for(TreeObject<T> o: cacheList)
+		{
+			if(o.compareTo(check) == 0)
+			{
+				o.incFrequency();
+				return true;
+			}
+		}
+		return false;
+		
+		/*
+		while(searching) {
+			if(iterator.hasNext())
+			{
+				currentObj = iterator.next();
+				if(currentObj.getKey() == check.getKey()) {
+					currentObj.incFrequency();
+				}
+			}
+			else
+			{
+				searching = false;
+			}
+		}
+		*/
 	}
 }
