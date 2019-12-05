@@ -26,6 +26,11 @@ public class GeneBankSearch {
             }
         }
 
+        //no cache or debug level given
+        if(args.length == 3){
+            debugLevel = 0;
+        }
+
 
         btreeFile = args[1];
         queryFile = args[2];
