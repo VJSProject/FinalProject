@@ -1,3 +1,6 @@
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,6 +18,7 @@ public class BTree<T> {
 	private int minKeys;
 	private int maxKeys;
 	private BTreeNode<T> root;
+	private int numNodes;
 	private Cache<TreeObject<T>> cache;
 	private boolean usingCache;
 	
@@ -28,6 +32,7 @@ public class BTree<T> {
 		this.minKeys = degree - 1;
 		this.maxKeys = (2*degree) - 1;
 		root = new BTreeNode<T>(degree);
+		this.numNodes = 1;
 		usingCache = false;
 	}
 	
@@ -134,6 +139,7 @@ public class BTree<T> {
 		if(this.root.getNumObjects() == this.maxKeys)
 		{
 			splitRoot();
+			numNodes++;
 		}
 		//if parent is full, split it
 		else if (node.getParent().getNumObjects() == this.maxKeys)
@@ -165,6 +171,7 @@ public class BTree<T> {
 					newChild.addChild(move);
 				}
 			}
+			numNodes++;
 		}
 	}
 	
@@ -182,6 +189,7 @@ public class BTree<T> {
 	public void enableCache(int cacheSize)
 	{
 		cache = new Cache<TreeObject<T>>(cacheSize);
+		usingCache = true;
 	}
 	
 	private boolean checkCache(TreeObject<T> check) 
@@ -196,25 +204,144 @@ public class BTree<T> {
 			if(o.compareTo(check) == 0)
 			{
 				o.incFrequency();
+				cache.getObject(o);
 				return true;
 			}
 		}
+		cache.addObject(check);
 		return false;
-		
-		/*
-		while(searching) {
-			if(iterator.hasNext())
-			{
-				currentObj = iterator.next();
-				if(currentObj.getKey() == check.getKey()) {
-					currentObj.incFrequency();
-				}
-			}
-			else
-			{
-				searching = false;
-			}
-		}
-		*/
 	}
+	
+	public int getDegree()
+	{
+		return this.degree;
+	}
+	
+	public int getNumNodes()
+	{
+		return this.numNodes;
+	}
+	
+	public void writeLongsToBinary(String fileName, int keyByteSize) throws FileNotFoundException
+	{
+		RandomAccessFile file = new RandomAccessFile(fileName, "rw");
+		try {
+			// BTree metadata
+			file.writeInt(degree);		//4 bytes
+			file.writeInt(numNodes);	//4 bytes
+			file.writeInt(keyByteSize);	//4 bytes
+			
+			
+			ArrayList<BTreeNode<T>> orderedList = getInOrderNodeArray();
+			int byteOffset = 12;
+			int nodeSize = 4 + 4 + (4*(2*this.degree + 1)) + (keyByteSize*(2*this.degree - 1));	
+			int pointerLocation = 12;
+			
+			for(BTreeNode<T> n: orderedList)
+			{
+				int parentOffset = byteOffset + (orderedList.indexOf(n.getParent())*nodeSize);
+				
+				//move to write pointers
+				file.seek(pointerLocation);
+				file.writeInt(parentOffset);							//4 for parent
+				for(int i = 0; i < n.getNumChildren(); i++)				//4*2t for children
+				{
+					file.writeInt(byteOffset + (orderedList.indexOf(n.getChild(i))*nodeSize));
+				}
+				
+				//move after pointers
+				file.seek(pointerLocation+(4*(2*this.degree + 1)));
+				
+				file.writeInt(n.getNumObjects());	//number of keys	//4
+				file.writeInt(pointerLocation);		//this location		//4
+				
+				
+				TreeObject<T>[] objects = n.getObjects();//all objects in node	//8*(2t-1)
+
+				for(int o = 0; o < n.getNumObjects(); o++)
+				{
+					file.writeLong((long) objects[o].getKey()); 
+				}
+				
+				pointerLocation += nodeSize;
+			}
+			//file.writeInt()
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void readFromBinary(String fileName) throws FileNotFoundException
+	{
+		RandomAccessFile file = new RandomAccessFile(fileName, "r");
+		
+		try {
+			int readDegree = file.readInt();
+			int readNumNodes = file.readInt();
+			int readKeySize = file.readInt();
+			
+			int nodeStart = 12;
+			int nodeSize = 4 + 4 + (4*(2*readDegree + 1)) + (readKeySize*(2*readDegree - 1));
+			
+			int firstParent = file.readInt();
+			file.seek(12+(4*(2*this.degree + 1))+4 + 4 + (4*(2*this.degree + 1)) + (8*(2*this.degree - 1)));
+			int firstNumKeys = file.readInt();
+			file.readInt();
+			float firstKey = file.readFloat();
+			
+			System.out.println("Degree: " + readDegree);
+			System.out.println("NumNodes: " + readNumNodes);
+			System.out.println("KeySize: " + readKeySize);
+			System.out.println("firstNumKeys: " + firstNumKeys);
+
+			System.out.println("firstKey: " + firstKey);
+
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public ArrayList<TreeObject<T>> getInOrderObjectArray()
+	{
+		ArrayList<TreeObject<T>> array = new ArrayList<TreeObject<T>>();
+		addSubtreeObjects(root, array);
+		return array;
+	}
+	public ArrayList<BTreeNode<T>> getInOrderNodeArray()
+	{
+		ArrayList<BTreeNode<T>> array = new ArrayList<BTreeNode<T>>();
+		addSubtreeNodes(root, array);
+		return array;
+	}
+	
+	private void addSubtreeObjects(BTreeNode<T> node, ArrayList<TreeObject<T>> array)
+	{
+		int i;
+		for(i = 0; i < node.getNumObjects(); i++)
+		{
+			if(!node.isLeaf())
+				addSubtreeObjects(node.getChild(i), array);
+			array.add(node.getObjects()[i]);
+		}
+		if(!node.isLeaf())
+			addSubtreeObjects(node.getChild(i), array);
+	}
+	
+	private void addSubtreeNodes(BTreeNode<T> node, ArrayList<BTreeNode<T>> array)
+	{
+		int i;
+		for(i = 0; i < node.getNumObjects(); i++)
+		{
+			if(!node.isLeaf())
+				addSubtreeNodes(node.getChild(i), array);
+		}
+		array.add(node);
+		if(!node.isLeaf())
+			addSubtreeNodes(node.getChild(i), array);
+	}
+	
+	
 }

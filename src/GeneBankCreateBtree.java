@@ -19,6 +19,7 @@ public class GeneBankCreateBtree {
 	private static int cacheSize;
 	private static int debugLevel = -1;
 	
+	private static String btreeFile;
 	private static BTree<Long> tree;
 	
     public static void main(String[] args) throws FileNotFoundException {
@@ -26,13 +27,25 @@ public class GeneBankCreateBtree {
     	long start = System.currentTimeMillis();
     	parseArgs(args);
     	
-    	if(degree == 0)
+    	if(degree == 0) {
+    		if(debugLevel == 0)
+    			System.out.print("Calculating optimal degree... ");
     		tree = new BTree<Long>(calculateOptimalDegree());
-    	else
+    		if(debugLevel == 0)
+    			System.out.println("found degree: " + tree.getDegree());
+    	}
+    	else {
+    		if(debugLevel == 0)
+    			System.out.println("Using degree: " + degree);
     		tree = new BTree<Long>(degree);
+    	}
     	
     	if(usingCache)
-    		//tree.enableCache(cacheSize);
+    	{
+    		if(debugLevel == 0)
+    			System.out.println("Using cache size: " + cacheSize);
+    		tree.enableCache(cacheSize);
+    	}
     	
     	//parses DNA sequences from file
         dnaStrings = createLongString(gbkFile);
@@ -45,8 +58,15 @@ public class GeneBankCreateBtree {
         
         tree.buildTree(keys);
         
-        System.out.println("Done.");
-        System.out.println("Runtime: " + (System.currentTimeMillis()-start));
+        btreeFile = gbkFile + ".btree.data."+seqLength+"."+degree;
+        tree.writeLongsToBinary(btreeFile, 8);
+        tree.readFromBinary(btreeFile);
+        
+		if(debugLevel == 0)
+		{
+			System.out.println("Done.");
+			System.out.println("Runtime: " + (System.currentTimeMillis()-start));
+		}
         
         
         
