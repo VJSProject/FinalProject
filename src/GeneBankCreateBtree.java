@@ -7,20 +7,19 @@ import java.util.ArrayList;
 
 public class GeneBankCreateBtree {
 
-    private static String dnaSequence;
     private static ArrayList<String> dnaStrings;
     private static ArrayList<Long> keys;
 
     /* user passed arguments */
     private static boolean usingCache;
-	private static int degree;
-	private static String gbkFile;
-	private static int seqLength;
-	private static int cacheSize;
-	private static int debugLevel = -1;
+	  private static int degree;
+	  private static String gbkFile;
+	  private static int seqLength;
+	  private static int cacheSize;
+	  private static int debugLevel = -1;
 	
-	private static String btreeFile;
-	private static BTree<Long> tree;
+  	private static String btreeFile;
+	  private static BTree<Long> tree;
 	
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -69,26 +68,6 @@ public class GeneBankCreateBtree {
 			System.out.println("Done.");
 			System.out.println("Runtime: " + (System.currentTimeMillis()-start));
 		}
-        
-        
-        
-        
-        /*
-        if(dnaString.lines().count() > 1){
-            String[] lines = dnaString.split("\n");
-            for(String line : lines){
-                //need to pass each line into as Btree
-                ArrayList<Long> test = createKeyValues(line, seqLength);
-                System.out.println(test);
-
-            }
-        }else {
-            createKeyValues(dnaString, seqLength);
-        }
-        */
-    }
-
-    
 
     /**
      * 
@@ -99,12 +78,9 @@ public class GeneBankCreateBtree {
         ArrayList<String> sequences = new ArrayList<String>();
 
         String currentSequence = "";
-        
         try {
-        	
             boolean dnaSection = false;
-            Scanner sc = new Scanner(new File(filename));
-            
+            Scanner sc = new Scanner(new File(filename));            
             while(sc.hasNext())
             {
                 if(sc.nextLine().contains("ORIGIN"))
@@ -118,6 +94,7 @@ public class GeneBankCreateBtree {
                             dnaSection = false;
                         } 
                         else {
+
                             String str = line.replaceAll("(\\d|\\s)","");
                             currentSequence += str;
                         }
@@ -131,8 +108,12 @@ public class GeneBankCreateBtree {
         return sequences;
     }
 
-    //takes dna string and separates it into substrings the size of arg "key"
-    //those substrings are then converted into binary
+    /**
+     * Takes a DNA string and splits it into key length and adds it to a long arraylist.
+     * @param dnaString
+     * @param size
+     * @return
+     */
     private static ArrayList<Long> createKeyValues(String dnaString, int size) {
     	ArrayList<Long> tokens = new ArrayList<Long>();
     	for(int i = 0; i< dnaString.length(); i++) {
@@ -144,8 +125,9 @@ public class GeneBankCreateBtree {
                     hold = hold.replaceAll("[cC]", "01");
                     hold = hold.replaceAll("[gG]", "10");
                     hold = hold.replaceAll("[tT]", "11");
+              
                     tokens.add(Long.parseLong(hold));
-                }
+             }
     		}
     	}
         return tokens;
@@ -201,7 +183,7 @@ public class GeneBankCreateBtree {
     }
     
     private static void help() {
-        System.out.println("Please follow the below format");
+        System.out.println("Usage:");
         System.out.println("GeneBankCreateBtree <0/1(no/with Cache)> <degree> <gbk file> <sequence length> [<cache size>]" +
                 " [<debug level>]");
         System.exit(0);
