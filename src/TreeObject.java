@@ -25,13 +25,22 @@ public class TreeObject<T> {
      * @return -1 if comparatively less than, 1 if greater, 0 if equal
      */
     public int compareTo(TreeObject<T> obj) {
-    	
-    	if(this.key.toString().compareTo(obj.key.toString()) < 0)
-    		return -1;
-    	else if(this.key.toString().compareTo(obj.key.toString()) > 0)
-    		return 1;
-    	else
-    		return 0;
+    	String thisKey = this.key.toString();
+        String comparisonKey = obj.key.toString();
+        
+        if(thisKey.length() > comparisonKey.length())
+            return 1;
+        else if(thisKey.length() < comparisonKey.length())
+            return -1;
+        else
+        {
+            if(thisKey.compareTo(comparisonKey) < 0)
+                return -1;
+            else if(thisKey.compareTo(comparisonKey) > 0)
+                return 1;
+            else
+                return 0;
+        }
     }
     
     @Override

@@ -16,6 +16,10 @@ public class BTreeNode<T> {
 	private int maxObjs;
 	private boolean isLeaf;
 	
+	private int byteOffset;
+	private int[] childrenOffsets;
+	private int parentOffset;
+	
 	/**
 	 * Constructor
 	 * @param obj - TreeObject this node stores
@@ -31,6 +35,9 @@ public class BTreeNode<T> {
 		this.objects = (TreeObject<T>[]) new TreeObject[maxObjs];
 		this.parent = null;
 		this.children = (BTreeNode<T>[]) new BTreeNode[(degree*2)];
+		
+		this.parentOffset = -1;
+		this.byteOffset = -1;
 	}
 	
 	/**
@@ -197,6 +204,12 @@ public class BTreeNode<T> {
 		}
 	}
 	
+	public void setObjects (TreeObject<T>[] objs)
+	{
+		this.objects = objs;
+		this.numObjects = objs.length;
+	}
+	
 	/**
 	 * Removes child from specified index
 	 * @param index
@@ -221,5 +234,24 @@ public class BTreeNode<T> {
 		}
 		s += "]";
 		return s;
+	}
+	
+	public void setBinaryData(int offset, int parent, int[] children)
+	{
+		this.byteOffset = offset;
+		this.parentOffset = parent;
+		this.childrenOffsets = children;
+	}
+	public int getBinaryOffset()
+	{
+		return this.byteOffset;
+	}
+	public int getBinaryParent()
+	{
+		return this.parentOffset;
+	}
+	public int[] getBinaryChildren()
+	{
+		return this.childrenOffsets;
 	}
 }
