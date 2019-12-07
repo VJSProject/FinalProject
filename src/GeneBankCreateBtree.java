@@ -27,6 +27,7 @@ public class GeneBankCreateBtree {
     	long start = System.currentTimeMillis();
     	parseArgs(args);
     	
+    	//Creates BTree
     	if(degree == 0) {
     		if(debugLevel == 0)
     			System.out.print("Calculating optimal degree... ");
@@ -40,6 +41,7 @@ public class GeneBankCreateBtree {
     		tree = new BTree<Long>(degree);
     	}
     	
+    	//Turns on cache
     	if(usingCache)
     	{
     		if(debugLevel == 0)
@@ -57,10 +59,10 @@ public class GeneBankCreateBtree {
         }
         
         tree.buildTree(keys);
+        System.out.println(tree.getInOrderNodeArray());
         
         btreeFile = gbkFile + ".btree.data."+seqLength+"."+degree;
         tree.writeLongsToBinary(btreeFile, 8);
-        tree.readFromBinary(btreeFile);
         
 		if(debugLevel == 0)
 		{
