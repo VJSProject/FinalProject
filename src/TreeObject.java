@@ -19,6 +19,14 @@ public class TreeObject<T> {
         frequency++;
     }
     
+    public int getFrequency() {
+    	return this.frequency;
+    }
+    
+    public void setFrequency(int freq)
+    {
+    	this.frequency = freq;
+    }
     /**
      * compares the keys string values
      * @param obj

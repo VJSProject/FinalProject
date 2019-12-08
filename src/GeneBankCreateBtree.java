@@ -1,13 +1,18 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 import java.util.ArrayList;
 
 public class GeneBankCreateBtree {
 
 	private final static int BLOCKSIZE = 4096;
-	private final static int NODEMETADATA = 12;
+	private final static int NODEMETADATA = Integer.BYTES*3;			//Integers storing degree, number of nodes, and object size
+	private final static int OBJECTDATA = Long.BYTES + Integer.BYTES;	//Long storing key, integer storing
+	private final static int POINTERSIZE = Integer.BYTES;				//Integer pointing to a nodes offset on file
 	
     private static ArrayList<String> dnaStrings;
     private static ArrayList<Long> keys;
@@ -68,10 +73,48 @@ public class GeneBankCreateBtree {
 			System.err.println("Done.");
 			System.err.println("Runtime: " + (System.currentTimeMillis()-start));
 		}
+		
+		if(debugLevel == 1)
+		{
+			dumpFile();
+			System.err.println("Dump file created.");
+		}
     }
 
-    /**
-     * 
+    private static void dumpFile() {
+		try {
+			FileWriter writer = new FileWriter(new File("dump"));
+			PrintWriter printer = new PrintWriter(writer);
+			
+			ArrayList<TreeObject<Long>> objects = tree.getInOrderObjectArray();
+			for(TreeObject<Long> o: objects)
+			{
+				String key = toDnaString(o.getKey());
+				int frequency = o.getFrequency();
+				printer.printf("%s: %d%n", key, frequency);	
+			}
+			printer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}			
+		
+	}
+
+	private static String toDnaString(Long key) {
+		String dna = key.toString();
+		while(dna.length() < seqLength*2)
+		{
+			dna = "0" + dna;
+		}
+        dna = dna.replaceAll("00", "A");
+        dna = dna.replaceAll("01", "C");
+        dna = dna.replaceAll("10", "G");
+        dna = dna.replaceAll("11", "T");
+		return dna;
+	}
+
+	/**
+     * Creates DNA strings from file
      * @param filename
      * @return
      */
@@ -140,11 +183,10 @@ public class GeneBankCreateBtree {
      */
     private static int calculateOptimalDegree() {
     	// metaData + pointers + objects <= 4096
-    	// 12 + 4(2t+1) + 8(2t-1) <= 4096
-    	// 8 + 24t <= 4096
-    	int optimalDegree = (BLOCKSIZE - NODEMETADATA - Integer.BYTES + Long.BYTES) / ((Integer.BYTES*2) + (Long.BYTES*2));
+    	// 12 + 4(2t+1) + 12(2t-1) <= 4096
+    	// 4 + 32t <= 4096
+    	int optimalDegree = (BLOCKSIZE - NODEMETADATA - POINTERSIZE + OBJECTDATA) / ((POINTERSIZE*2) + (OBJECTDATA*2));
 		return optimalDegree;
-		
 	}
     
     /**

@@ -224,11 +224,6 @@ public class BTree<T> {
 		return this.numNodes;
 	}
 	
-	public int getNodeMetaData()
-	{
-		return this.NODEMETADATA;
-	}
-	
 	/**
 	 * Writes this BTree to a binary file, given that the tree stores Long objects
 	 * @param fileName
@@ -238,7 +233,7 @@ public class BTree<T> {
 	public void writeLongsToBinary(String fileName) throws FileNotFoundException
 	{
 		RandomAccessFile file = new RandomAccessFile(fileName, "rw");
-		int keyByteSize = Long.BYTES;
+		int keyByteSize = Long.BYTES + Integer.BYTES;	//Key and frequency
 		try {
 			// BTree metadata
 			file.writeInt(degree);		//4 bytes
@@ -271,11 +266,12 @@ public class BTree<T> {
 				file.writeInt((pointerLocation-12)/nodeSize);		//this location		//4: metadata
 				
 				
-				TreeObject<T>[] objects = n.getObjects();//all objects in node	//8*(2t-1): keys
+				TreeObject<T>[] objects = n.getObjects();//all objects in node	//12*(2t-1): keys
 
 				for(int o = 0; o < n.getNumObjects(); o++)
 				{
-					file.writeLong((long) objects[o].getKey()); 
+					file.writeLong((long) objects[o].getKey());
+					file.writeInt(objects[o].getFrequency());
 				}
 				
 				pointerLocation += nodeSize;
@@ -395,7 +391,9 @@ public class BTree<T> {
 
 				for(int k = 0; k < numKeys; k++)
 				{
-					nodeObjects[k] = new TreeObject<Long>(file.readLong());
+					TreeObject<Long> currentObject = new TreeObject<Long>(file.readLong());
+					currentObject.setFrequency(file.readInt());
+					nodeObjects[k] = currentObject;
 				}
 				
 				BTreeNode<Long> readNode = new BTreeNode<Long>(readDegree);
