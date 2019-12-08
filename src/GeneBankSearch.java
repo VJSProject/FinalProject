@@ -1,3 +1,6 @@
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
 public class GeneBankSearch {
 
     private static int cache,cacheSize,debugLevel;
@@ -33,6 +36,14 @@ public class GeneBankSearch {
 
         btreeFile = args[1];
         queryFile = args[2];
+
+        File qFile = new File(queryFile);
+        try {
+            Scanner scan = new Scanner(qFile);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
