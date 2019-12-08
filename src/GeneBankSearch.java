@@ -38,8 +38,28 @@ public class GeneBankSearch {
         queryFile = args[2];
 
         File qFile = new File(queryFile);
+        File bFile = new File(btreeFile);
         try {
             Scanner scan = new Scanner(qFile);
+            while(scan.hasNextLine()){
+                String sequence = scan.next();
+                Scanner scan2 = new Scanner(bFile);
+                while(scan2.hasNextLine()){
+                    String[] btreeLine = new String[2];
+                    for(int i = 0; i<2; i++){
+                        btreeLine[i] = scan2.next();
+                    }
+                    if(btreeLine[0]==sequence){
+                        System.out.println(btreeLine.toString());
+                        break;
+                    }
+                    else{
+                        scan2.nextLine();
+                    }   
+                }     
+                scan2.close();           
+            }
+            scan.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
