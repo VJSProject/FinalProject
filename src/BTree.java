@@ -23,6 +23,7 @@ public class BTree<T> {
 	private boolean usingCache;
 	
 	private int nodeSize;
+	private final int NODEMETADATA = 12;
 	/**
 	 * Constructor
 	 * @param degree
@@ -36,6 +37,7 @@ public class BTree<T> {
 		this.numNodes = 1;
 		usingCache = false;
 	}
+	
 	
 	/**
 	 * Builds the tree using an array of generic TreeObjects
@@ -197,7 +199,6 @@ public class BTree<T> {
 	{
 		LinkedList<TreeObject<T>> cacheList = cache.getCacheList();
 		//boolean searching = true;
-		Iterator<TreeObject<T>> iterator = cacheList.iterator();
 		//TreeObject<T> currentObj;
 		
 		for(TreeObject<T> o: cacheList)
@@ -223,15 +224,21 @@ public class BTree<T> {
 		return this.numNodes;
 	}
 	
+	public int getNodeMetaData()
+	{
+		return this.NODEMETADATA;
+	}
+	
 	/**
 	 * Writes this BTree to a binary file, given that the tree stores Long objects
 	 * @param fileName
 	 * @param keyByteSize
 	 * @throws FileNotFoundException
 	 */
-	public void writeLongsToBinary(String fileName, int keyByteSize) throws FileNotFoundException
+	public void writeLongsToBinary(String fileName) throws FileNotFoundException
 	{
 		RandomAccessFile file = new RandomAccessFile(fileName, "rw");
+		int keyByteSize = Long.BYTES;
 		try {
 			// BTree metadata
 			file.writeInt(degree);		//4 bytes
@@ -240,7 +247,7 @@ public class BTree<T> {
 			
 			
 			ArrayList<BTreeNode<T>> orderedList = getInOrderNodeArray();
-			int nodeSize = 4 + 4 + 4 + (4*(2*this.degree + 1)) + (keyByteSize*(2*this.degree - 1));	
+			int nodeSize = NODEMETADATA + (4*(2*this.degree + 1)) + (keyByteSize*(2*this.degree - 1));	
 			int pointerLocation = 12;
 			
 			for(BTreeNode<T> n: orderedList)
@@ -249,9 +256,9 @@ public class BTree<T> {
 				
 				//move to write pointers
 				file.seek(pointerLocation);
-				file.writeInt(parentOffset);							//4 for parent
-				file.writeInt(n.getNumChildren());						//4 for num children
-				for(int i = 0; i < n.getNumChildren(); i++)				//4*2t for children
+				file.writeInt(parentOffset);							//4 for parent: pointer
+				file.writeInt(n.getNumChildren());						//4 for num children: metadata
+				for(int i = 0; i < n.getNumChildren(); i++)				//4*2t for children: pointer
 				{
 					int write = orderedList.indexOf(n.getChild(i));
 					file.writeInt(write);
@@ -260,11 +267,11 @@ public class BTree<T> {
 				//move after pointers
 				file.seek(pointerLocation+(4+4*(2*this.degree + 1)));
 				
-				file.writeInt(n.getNumObjects());	//number of keys	//4
-				file.writeInt((pointerLocation-12)/nodeSize);		//this location		//4
+				file.writeInt(n.getNumObjects());					//number of keys	//4: metadata
+				file.writeInt((pointerLocation-12)/nodeSize);		//this location		//4: metadata
 				
 				
-				TreeObject<T>[] objects = n.getObjects();//all objects in node	//8*(2t-1)
+				TreeObject<T>[] objects = n.getObjects();//all objects in node	//8*(2t-1): keys
 
 				for(int o = 0; o < n.getNumObjects(); o++)
 				{
@@ -361,7 +368,7 @@ public class BTree<T> {
 			this.numNodes = readNumNodes;
 			int readKeySize = file.readInt();
 			
-			nodeSize = 4 + 4 + 4 + (4*(2*readDegree + 1)) + (readKeySize*(2*readDegree - 1));
+			this.nodeSize = NODEMETADATA + (4*(2*readDegree + 1)) + (readKeySize*(2*readDegree - 1));
 			int currentNode = 12;
 			
 			BTreeNode<Long>[] nodes = (BTreeNode<Long>[]) new BTreeNode[readNumNodes];
@@ -371,9 +378,8 @@ public class BTree<T> {
 				file.seek(currentNode);
 				int parentOffset = file.readInt();
 				int numChildren = file.readInt();
-				//move to read pointers
 				int[] childrenPointers = new int[numChildren];
-				for(int j = 0; j < numChildren; j++)				//4*2t for children
+				for(int j = 0; j < numChildren; j++)
 				{
 					int currentChild = file.readInt();
 					childrenPointers[j] = currentChild;

@@ -9,13 +9,13 @@ public class GeneBankSearch {
             help();
         }
         
-        //all arguements given
+        //all arguments given
         if(args.length == 5){
             debugLevel = Integer.parseInt(args[4]);
             cacheSize = Integer.parseInt(args[3]);
         }
         
-        //some arguements omitted
+        //some arguments omitted
         if(args.length == 4){
             if(Integer.parseInt(args[0])==0){ //no cache
                  debugLevel = Integer.parseInt(args[3]);
@@ -30,7 +30,6 @@ public class GeneBankSearch {
         if(args.length == 3){
             debugLevel = 0;
         }
-
 
         btreeFile = args[1];
         queryFile = args[2];
