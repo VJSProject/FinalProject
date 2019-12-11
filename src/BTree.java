@@ -417,14 +417,48 @@ public class BTree<T> {
 		}
 	}
 
+	private boolean checkCacheSearch(T check){
+		LinkedList<BTreeNode<T>> cacheList = cache.getCacheList();
+		TreeObject<T> c = new TreeObject<T>(check);
+		for(BTreeNode<T> n : cacheList){
+			TreeObject<T>[] objects = n.getObjects();
+			for(int i = 0; i < n.getNumObjects(); i++){
+				TreeObject<T> o = objects[i];
+				if(o.compareTo(c)==0){
+					cache.getObject(n);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public void BTreeSearchCache(T sequence){
+		boolean inCache = false;
+		if(usingCache){
+			inCache = checkCacheSearch(sequence);
+		}
+		
+	}
+
 	public int BTreeSearch(T sequence){
+
 		TreeObject <T> seq = new TreeObject<T>(sequence);
 		BTreeNode <T> n = this.root;
-
+		boolean inCache = false;
+		
+		if(usingCache){
+			inCache = checkCacheSearch(sequence);
+		}
+		
 		while(!n.isLeaf()){
 			TreeObject<T>[] keys = n.getObjects();
+			
 			int i = 0;
 			while(i < n.getNumObjects()){
+				if(inCache){
+					// TODO figure out how to return frequency if node n is in cache
+				}
 				if(keys[i].compareTo(seq) == 0){
 					return keys[i].getFrequency();
 				}
