@@ -416,5 +416,22 @@ public class BTree<T> {
 			return null;
 		}
 	}
-	
+
+	public int BTreeSearch(T sequence){
+		TreeObject <T> seq = new TreeObject<T>(sequence);
+		BTreeNode <T> n = this.root;
+
+		while(!n.isLeaf()){
+			TreeObject<T>[] keys = n.getObjects();
+			int i = 0;
+			while(i < n.getNumObjects()){
+				if(keys[i].compareTo(seq) == 0){
+					return keys[i].getFrequency();
+				}
+				i++;
+			}
+			n = n.getChild(i);
+
+		}return -1;
+	}
 }
