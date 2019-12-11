@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -11,6 +12,7 @@ public class Cache<T> {
 	//Instance variables//
 	private int nr;					//number of references
 	private LinkedList<T> cacheList;//stores objects to simulate a cache
+	private ArrayList<T> cachedArray;
 	private int maxSize;			//capacity of cache
 	private boolean isHit;			//whether last search was a hit
 
@@ -24,6 +26,7 @@ public class Cache<T> {
 		isHit = false;
 		this.maxSize = maxSize;
 		cacheList = new LinkedList<T>();
+		cachedArray = new ArrayList<T>();
 	}
 	
 	/**

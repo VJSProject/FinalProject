@@ -51,8 +51,18 @@ public class TreeObject<T> {
         }
     }
     
+    @SuppressWarnings("unchecked")
+	@Override
+    public boolean equals(Object o)
+    {
+    	if(this.compareTo((TreeObject<T>) o) == 0)
+    		return true;
+    	return false;
+    }
+    
     @Override
     public String toString() {
     	return this.key.toString();
     }
+    
 }

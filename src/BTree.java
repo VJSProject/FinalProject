@@ -19,7 +19,7 @@ public class BTree<T> {
 	private int maxKeys;
 	private BTreeNode<T> root;
 	private int numNodes;
-	private Cache<TreeObject<T>> cache;
+	private Cache<BTreeNode<T>> cache;
 	private boolean usingCache;
 	
 	private int nodeSize;
@@ -79,34 +79,40 @@ public class BTree<T> {
 			inCache = checkCache(obj);
 		}
 				
-		if(!inCache)
-		{
-			BTreeNode<T> n = root;
-			//descends to correct leaf node
-			boolean duplicate = false;
-			while (!n.isLeaf() && !duplicate) {
-				TreeObject<T>[] keys = n.getObjects();
-				int i = 0;
-				while(i < n.getNumObjects() && keys[i].compareTo(obj) <= 0) {
-					if(keys[i].compareTo(obj) == 0) {
-						duplicate = true;
-					}
-					i++;
-				}
-				if(!duplicate) {
-					n = n.getChild(i);
-				}
-			}
-			//try to add object, split if full
-			try {
-				n.addObject(obj);
-			} catch (ArrayIndexOutOfBoundsException e) {
-				splitNode(n);
-				insertObject(obj);
-			}		
+		if(!inCache) {
+			attemptInsert(obj);
 		}
 	}
 
+	private void attemptInsert(TreeObject<T> obj)
+	{
+		BTreeNode<T> n = root;
+		//descends to correct leaf node
+		boolean duplicate = false;
+		while (!n.isLeaf() && !duplicate) {
+			TreeObject<T>[] keys = n.getObjects();
+			int i = 0;
+			while(i < n.getNumObjects() && keys[i].compareTo(obj) <= 0) {
+				if(keys[i].compareTo(obj) == 0) {
+					duplicate = true;
+				}
+				i++;
+			}
+			if(!duplicate) {
+				n = n.getChild(i);
+			}
+		}
+		//try to add object, split if full
+		try {
+			n.addObject(obj);
+			if(usingCache)
+				cache.getObject(n);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			splitNode(n);
+			attemptInsert(obj);
+		}		
+	}
+	
 	/**
 	 * Inserts a key into the BTree (in order)
 	 * @param key
@@ -116,21 +122,8 @@ public class BTree<T> {
 	}
 	
 	@Override
-	//TODO - This doesn't print properly yet
 	public String toString() {
-		String s = "";
-		BTreeNode<T> n = root;
-		s += n.toString();
-		BTreeNode<T>[] children = n.getChildren();
-		
-		while(!n.isLeaf())
-		{
-			for(BTreeNode<T> c: children) {
-				s += c.toString();
-			}
-		}
-		
-		return s;
+		return this.getInOrderNodeArray().toString();		
 	}
 	
 	/**
@@ -186,33 +179,17 @@ public class BTree<T> {
 		root.getParent().addChild(root);
 		BTreeNode<T> left = root;
 		root = root.getParent();
+		
 		splitNode(left);
 	}
 	
 	public void enableCache(int cacheSize)
 	{
-		cache = new Cache<TreeObject<T>>(cacheSize);
+		cache = new Cache<BTreeNode<T>>(cacheSize);
 		usingCache = true;
 	}
 	
-	private boolean checkCache(TreeObject<T> check) 
-	{
-		LinkedList<TreeObject<T>> cacheList = cache.getCacheList();
-		//boolean searching = true;
-		//TreeObject<T> currentObj;
-		
-		for(TreeObject<T> o: cacheList)
-		{
-			if(o.compareTo(check) == 0)
-			{
-				o.incFrequency();
-				cache.getObject(o);
-				return true;
-			}
-		}
-		cache.addObject(check);
-		return false;
-	}
+	
 	
 	public int getDegree()
 	{
@@ -292,6 +269,7 @@ public class BTree<T> {
 		BTreeNode<Long>[] nodes = this.binaryToNodes(fileName);
 		for(BTreeNode<Long> n: nodes)
 		{
+			//If parent pointer is -1 (doesn't exist), current node is the root
 			if(n.getBinaryParent() >= 0)
 				n.setParent(nodes[n.getBinaryParent()]);
 			else
@@ -316,6 +294,33 @@ public class BTree<T> {
 		ArrayList<BTreeNode<T>> array = new ArrayList<BTreeNode<T>>();
 		addSubtreeNodes(root, array);
 		return array;
+	}
+	
+	private boolean checkCache(TreeObject<T> check) 
+	{
+		LinkedList<BTreeNode<T>> cacheList = cache.getCacheList();
+		
+		for(BTreeNode<T> n: cacheList)
+		{
+			TreeObject<T>[] objects = n.getObjects();
+			if(check.compareTo(objects[0]) < 0 && !n.isLeaf())
+				return false;
+			for(int i = 0; i < n.getNumObjects(); i ++)
+			{
+				TreeObject<T> o = objects[i];
+				if(o.compareTo(check) < 0 && !n.isLeaf())
+				{}
+				else if(o.compareTo(check) > 0 && !n.isLeaf())
+				{}
+				else if(o.compareTo(check) == 0)
+				{
+					o.incFrequency();
+					cache.getObject(n);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void addSubtreeObjects(BTreeNode<T> node, ArrayList<TreeObject<T>> array)
@@ -384,8 +389,8 @@ public class BTree<T> {
 				//move after pointers
 				file.seek(currentNode+(4+4*(2*this.degree + 1)));
 				
-				int numKeys = file.readInt();			//number of keys	//4
-				int thisLocation = file.readInt();		//this location		//4
+				int numKeys = file.readInt();
+				int thisLocation = file.readInt();
 				
 				TreeObject<Long>[] nodeObjects = (TreeObject<Long>[]) new TreeObject[numKeys];
 

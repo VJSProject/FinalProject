@@ -29,8 +29,9 @@ public class GeneBankCreateBtree {
 	private static BTree<Long> tree;
 	
     public static void main(String[] args) throws FileNotFoundException {
-
-    	long start = System.currentTimeMillis();
+    	//107259  81 1024
+    	//
+    	
     	parseArgs(args);
     	
     	//Creates BTree
@@ -47,6 +48,9 @@ public class GeneBankCreateBtree {
     		tree = new BTree<Long>(degree);
     	}
     	
+    	if(debugLevel >= 0)
+			System.err.println("Using key length: " + seqLength);
+    	
     	//Turns on cache
     	if(usingCache)
     	{
@@ -55,14 +59,17 @@ public class GeneBankCreateBtree {
     		tree.enableCache(cacheSize);
     	}
     	
+    	if(debugLevel >= 0)
+    		System.err.print("Reading file \""+ gbkFile + "\"... ");
     	//parses DNA sequences from file
         dnaStrings = createLongString(gbkFile);
         //creates keys from each DNA sequence
-        if(debugLevel >= 0)
-        	System.err.print("Building tree... ");
         keys = new ArrayList<Long>();
         for(String s: dnaStrings)
         	keys.addAll(createKeyValues(s, seqLength));
+        if(debugLevel >= 0)
+        	System.err.print("Building tree... ");
+        long start = System.currentTimeMillis();
         //write tree to binary
         tree.buildTree(keys);        
         btreeFile = gbkFile + ".btree.data."+seqLength+"."+degree;
@@ -71,7 +78,9 @@ public class GeneBankCreateBtree {
 		if(debugLevel >= 0)
 		{
 			System.err.println("Done.");
-			System.err.println("Runtime: " + (System.currentTimeMillis()-start));
+			System.err.println("Tree build-time: " + (System.currentTimeMillis()-start));
+			System.err.println("Number of nodes in tree: "+tree.getNumNodes());
+			System.err.println("Number of keys in tree: "+tree.getInOrderObjectArray().size());
 		}
 		
 		if(debugLevel == 1)
@@ -101,15 +110,21 @@ public class GeneBankCreateBtree {
 	}
 
 	private static String toDnaString(Long key) {
-		String dna = key.toString();
-		while(dna.length() < seqLength*2)
+
+		String dna = "";
+		String keyString = key.toString();
+		while(keyString.length() < seqLength*2)
 		{
-			dna = "0" + dna;
+			keyString = "0" + keyString;
 		}
-        dna = dna.replaceAll("00", "A");
-        dna = dna.replaceAll("01", "C");
-        dna = dna.replaceAll("10", "G");
-        dna = dna.replaceAll("11", "T");
+		for(int i = 0; i < keyString.length()-1; i = i+2)
+		{
+			dna += keyString.substring(i, i+2);
+			dna = dna.replaceAll("00", "A");
+	        dna = dna.replaceAll("01", "C");
+	        dna = dna.replaceAll("10", "G");
+	        dna = dna.replaceAll("11", "T");
+		}
 		return dna;
 	}
 
