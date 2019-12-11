@@ -6,7 +6,7 @@ public class GeneBankSearch {
     private static int cache,cacheSize,debugLevel;
     private static String btreeFile,queryFile;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
 
         if(args.length > 5 || args.length < 3 || Integer.parseInt(args[0]) > 1){
             help();
@@ -35,31 +35,30 @@ public class GeneBankSearch {
         }
 
         btreeFile = args[1];
+        BTree<Long> readTree = new BTree<Long>(1);
+        readTree.readFromBinary(btreeFile);
+
         queryFile = args[2];
 
         File qFile = new File(queryFile);
-        File bFile = new File(btreeFile);
         try {
-            Scanner scan = new Scanner(qFile);
-            while(scan.hasNextLine()){
-                String sequence = scan.next();
-                Scanner scan2 = new Scanner(bFile);
-                while(scan2.hasNextLine()){
-                    String[] btreeLine = new String[2];
-                    for(int i = 0; i<2; i++){
-                        btreeLine[i] = scan2.next();
-                    }
-                    if(btreeLine[0]==sequence){
-                        System.out.println(btreeLine.toString());
-                        break;
-                    }
-                    else{
-                        scan2.nextLine();
-                    }   
-                }     
-                scan2.close();           
+            Scanner qScan = new Scanner(qFile);
+            while(qScan.hasNextLine()){
+                String sequence = qScan.next();
+                String seqBinary = sequence.replaceAll("[aA]", "00");
+                seqBinary = seqBinary.replaceAll("[cC]", "01");
+                seqBinary = seqBinary.replaceAll("[gG]", "10");
+                seqBinary = seqBinary.replaceAll("[tT]", "11");
+
+                int feq = readTree.BTreeSearch(Long.parseLong(seqBinary));
+                System.out.print(sequence + ": ");
+                if(feq < 0){
+                    System.out.println("Pattern Not Found");
+                }
+                else{
+                    System.out.println(feq);
+                }
             }
-            scan.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -72,4 +71,5 @@ public class GeneBankSearch {
                 "[<debug level>]");
         System.exit(0);
     }
+
 }
