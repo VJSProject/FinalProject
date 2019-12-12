@@ -449,30 +449,95 @@ public class BTree<T> {
 	public int BTreeSearch(T sequence){
 
 		TreeObject <T> seq = new TreeObject<T>(sequence);
-		BTreeNode <T> n = this.root;
 		int freq = -1;
-		
 		if(usingCache) {
-			freq = checkCacheSearch(sequence);
-			return freq;
+			freq = searchCache(seq);
 		}
-		
-		if(freq == -1)
-		{
-			while(!n.isLeaf()){
-				TreeObject<T>[] keys = n.getObjects();
 				
-				int i = 0;
-				while(i < n.getNumObjects()){
-					if(keys[i].compareTo(seq) == 0){
-						cache.getObject(n);
-						return keys[i].getFrequency();
-					}
-					i++;
+		if(freq == -1) {
+			freq = attemptSearch(seq);
+		}
+			
+		return freq;
+		
+	}
+	
+	private int attemptSearch(TreeObject<T> search) {
+//		//BTreeNode <T> n = this.root;
+//		int freq = -1;
+//		
+//		if(usingCache) {
+//			freq = checkCacheSearch(sequence);
+//			return freq;
+//		}
+//		
+//		if(freq == -1)
+//		{
+//			while(!n.isLeaf()){
+//				TreeObject<T>[] keys = n.getObjects();
+//				
+//				int i = 0;
+//				while(i < n.getNumObjects()){
+//					if(keys[i].compareTo(seq) == 0){
+//						cache.getObject(n);
+//						return keys[i].getFrequency();
+//					}
+//					i++;
+//				}
+//				n = n.getChild(i);
+//			}
+//		}
+//		return freq;
+		
+		BTreeNode<T> n = root;
+		int frequency = -1;
+		//descends to correct leaf node
+		boolean found = false;
+		while (!found) {
+			TreeObject<T>[] keys = n.getObjects();
+			int i = 0;
+			while(i < n.getNumObjects() && keys[i].compareTo(search) <= 0) {
+				if(keys[i].compareTo(search) == 0) {
+					found = true;
+					frequency = keys[i].getFrequency();
 				}
+				i++;
+			}
+			if(!found) {
 				n = n.getChild(i);
 			}
 		}
-		return freq;
+		
+		if(usingCache && found)
+			cache.getObject(n);
+		return frequency;
+		
+	}
+	
+	private int searchCache(TreeObject<T> check) 
+	{
+		LinkedList<BTreeNode<T>> cacheList = cache.getCacheList();
+		
+		for(BTreeNode<T> n: cacheList)
+		{
+			TreeObject<T>[] objects = n.getObjects();
+			if(check.compareTo(objects[0]) < 0 && !n.isLeaf())
+				;
+			for(int i = 0; i < n.getNumObjects(); i ++)
+			{
+				TreeObject<T> o = objects[i];
+				if(o.compareTo(check) < 0 && !n.isLeaf())
+				{}
+				else if(o.compareTo(check) > 0 && !n.isLeaf())
+				{}
+				else if(o.compareTo(check) == 0)
+				{
+					int freq = o.getFrequency();
+					cache.getObject(n);
+					return freq;
+				}
+			}
+		}
+		return -1;
 	}
 }

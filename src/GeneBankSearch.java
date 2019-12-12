@@ -3,56 +3,37 @@ import java.io.File;
 import java.io.FileNotFoundException;
 public class GeneBankSearch {
 
-    private static int cache,debugLevel;
-    private static int cacheSize = 0;
-    private static String btreeFile,queryFile;
+    private static int debugLevel;
+    private static boolean usingCache;
+    private static int cacheSize;
+    private static String btreeFile, queryFile;
     private static BTree<Long> readTree;
     private static int seqLength;
 
     public static void main(String[] args) throws FileNotFoundException {
+    	
+    	parseArgs(args);
 
-        if(args.length > 5 || args.length < 3 || Integer.parseInt(args[0]) > 1){
-            help();
-        }
-        
-        //all arguments given
-        if(args.length == 5){
-            debugLevel = Integer.parseInt(args[4]);
-            cacheSize = Integer.parseInt(args[3]);
-        }
-        
-        //some arguments omitted
-        if(args.length == 4){
-            if(Integer.parseInt(args[0])==0){ //no cache
-                 debugLevel = Integer.parseInt(args[3]);
-            }
-            if(Integer.parseInt(args[0])==1){ //yes cache
-                 cacheSize = Integer.parseInt(args[3]);
-                 debugLevel = 0;
-            }
-        }
-
-        //no cache or debug level given
-        if(args.length == 3){
-            debugLevel = 0;
-        }
-        
-        
-        btreeFile = args[1];
         readTree = new BTree<Long>(1);
-        readTree.readFromBinary(btreeFile);
+        try {
+        	if(debugLevel == 0)
+        		System.err.println("Building tree from file...");
+        	readTree.readFromBinary(btreeFile);
+        } catch (FileNotFoundException e) {
+        	System.err.println("Error - BTree file not found");
+        	help();
+        }
         //if using cache
-        if(cacheSize != 0)
-        {
+        if(usingCache) {
+        	if(debugLevel == 0)
+        		System.err.println("Cache enabled with size: "+cacheSize);
         	readTree.enableCache(cacheSize);
         }
-
-        queryFile = args[2];
 
         File qFile = new File(queryFile);
         try {
             Scanner qScan = new Scanner(qFile);
-            while(qScan.hasNextLine()){
+            while(qScan.hasNextLine()) {
                 String sequence = qScan.next();
                 seqLength = sequence.length();
                 String seqBinary = sequence.replaceAll("[aA]", "00");
@@ -61,7 +42,7 @@ public class GeneBankSearch {
                 seqBinary = seqBinary.replaceAll("[tT]", "11");
 
                 int feq = readTree.BTreeSearch(Long.parseLong(seqBinary));
-                System.out.print(sequence + ": ");
+                System.out.print(sequence.toUpperCase() + ": ");
                 if(feq < 0){
                     System.out.println("Pattern Not Found");
                 }
@@ -69,14 +50,56 @@ public class GeneBankSearch {
                     System.out.println(feq);
                 }
             }
+            qScan.close();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	System.err.println("Error - Query file not found");
+        	help();
+        } catch(NumberFormatException e) {
+        	System.err.println("Error - Improper query format");
         }
 
     }
 
-    private static String toDnaString(Long key) {
+    private static void parseArgs(String[] args) {
+    	
+    	debugLevel = -1;
+    	usingCache = false;
+    	cacheSize = -1;
+    	
+    	//number of arguments out of bounds
+    	if(args.length > 5 || args.length < 3 || Integer.parseInt(args[0]) > 1 || Integer.parseInt(args[0]) < 0){
+            help();
+        }		
+    	if(Integer.parseInt(args[0]) == 1)
+    		usingCache = true;
+    	
+    	btreeFile = args[1];
+    	queryFile = args[2];
+    	
+    	//when using cache
+    	if(usingCache)
+    	{
+    		if(args.length < 4 ) {
+    			System.out.println("Incorrect Usage (0 or 1 required in cache parameter. Cache size required if using cache.)");
+    			help();
+    		}
+    		
+    		cacheSize = Integer.parseInt(args[3]);
+    		
+    		if(args.length > 4)
+    			debugLevel = Integer.parseInt(args[4]);
+    		
+    	}
+    	//when not using cache
+    	else {
+    		if(args.length > 4)
+    			help();
+    		if(args.length == 4)
+    			debugLevel = Integer.parseInt(args[3]);
+    	}
+	}
+
+	private static String toDnaString(Long key) {
 
 		String dna = "";
 		String keyString = key.toString();
