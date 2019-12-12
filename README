@@ -1,7 +1,25 @@
-Tasks:
+CS321 Project 4: Skyler, Victor, John
+---------
+The GeneBankCreateBTree class creates a binary file that stores BTree data. This data is read by the GeneBankSearch class.
+---------
+Structure of BTree in binary file:
 
-1. Parse file
-    -Break it into strings of length k
-    -convert each token into binary
-    -store long data type in a tree object
-    -add the new tree object to the BTree
+The binary file starts with three integer values containing metadata for the BTree.
+BTree metadata:
+    ~ Degree (Integer: 4 bytes)
+    ~ Number of nodes (Integer: 4 bytes)
+    ~ Size of key in bytes (Integer: 4 bytes)
+After the BTree meta data, there is a sequence of n nodes, where n is the number of nodes in the BTree.
+Each node contains:
+    ~ 2t+1 possible pointers, where t is the degree (Each pointer = 1 Integer. 4*(2t-1) total bytes)
+    ~ 2t-1 possible keys (keySize*(2t-1) bytes)
+    ~ Number of keys stored (Integer: 4 bytes)
+    ~ Number of children (Integer: 4 bytes)
+    ~ This nodes location (Integer: 4 bytes)
+Further notes:
+    ~ A pointer stores a node's offset from the end of the BTree metadata.
+    ~ Because each key we store is a long (8 bytes), 
+     and we also have to store the frequency of the key in an integer (4 bytes),
+     the amount of data stored in one key (keySize) is a total of 12 bytes.
+    ~ The total size of a node is (12 + 4*(2*t+1) + keySize*(2*t-1)).
+    ~ The root node can be determined as it is the only node with a null parent pointer.
