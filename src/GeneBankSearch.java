@@ -3,8 +3,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 public class GeneBankSearch {
 
-    private static int cache,cacheSize,debugLevel;
+    private static int cache,debugLevel;
+    private static int cacheSize = 0;
     private static String btreeFile,queryFile;
+    private static BTree<Long> readTree;
+    private static int seqLength;
 
     public static void main(String[] args) throws FileNotFoundException {
 
@@ -33,10 +36,16 @@ public class GeneBankSearch {
         if(args.length == 3){
             debugLevel = 0;
         }
-
+        
+        
         btreeFile = args[1];
-        BTree<Long> readTree = new BTree<Long>(1);
+        readTree = new BTree<Long>(1);
         readTree.readFromBinary(btreeFile);
+        //if using cache
+        if(cacheSize != 0)
+        {
+        	readTree.enableCache(cacheSize);
+        }
 
         queryFile = args[2];
 
@@ -45,6 +54,7 @@ public class GeneBankSearch {
             Scanner qScan = new Scanner(qFile);
             while(qScan.hasNextLine()){
                 String sequence = qScan.next();
+                seqLength = sequence.length();
                 String seqBinary = sequence.replaceAll("[aA]", "00");
                 seqBinary = seqBinary.replaceAll("[cC]", "01");
                 seqBinary = seqBinary.replaceAll("[gG]", "10");
@@ -65,6 +75,25 @@ public class GeneBankSearch {
         }
 
     }
+
+    private static String toDnaString(Long key) {
+
+		String dna = "";
+		String keyString = key.toString();
+		while(keyString.length() < seqLength*2)
+		{
+			keyString = "0" + keyString;
+		}
+		for(int i = 0; i < keyString.length()-1; i = i+2)
+		{
+			dna += keyString.substring(i, i+2);
+			dna = dna.replaceAll("00", "A");
+	        dna = dna.replaceAll("01", "C");
+	        dna = dna.replaceAll("10", "G");
+	        dna = dna.replaceAll("11", "T");
+		}
+		return dna;
+	}
 
     private static void help() {
         System.out.println("Usage: java GeneBankSearch <0/1(no/with Cache)> <Btree file> <query file> [<cache size>]" +

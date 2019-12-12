@@ -436,9 +436,9 @@ public class BTree<T> {
 	public void BTreeSearchCache(T sequence){
 		boolean inCache = false;
 		if(usingCache){
-			inCache = checkCacheSearch(sequence);
+			if(checkCacheSearch(sequence) != -1)
+				inCache = true;
 		}
-		
 	}
 
 	/**
