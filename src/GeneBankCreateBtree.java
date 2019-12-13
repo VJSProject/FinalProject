@@ -63,6 +63,11 @@ public class GeneBankCreateBtree {
     		System.err.print("Reading file \""+ gbkFile + "\"... ");
     	//parses DNA sequences from file
         dnaStrings = createLongString(gbkFile);
+        //If not dna string found in file
+        if(dnaStrings.isEmpty()){
+			System.out.println("No DNA string found in file: " + gbkFile);
+			System.exit(0);
+		}
         //creates keys from each DNA sequence
         keys = new ArrayList<Long>();
         for(String s: dnaStrings)
