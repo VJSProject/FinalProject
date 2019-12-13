@@ -65,7 +65,7 @@ public class GeneBankCreateBtree {
         dnaStrings = createLongString(gbkFile);
         //If not dna string found in file
         if(dnaStrings.isEmpty()){
-			System.out.println("No DNA string found in file: " + gbkFile);
+			System.err.println("No DNA string found in file: " + gbkFile);
 			System.exit(0);
 		}
         //creates keys from each DNA sequence
@@ -125,10 +125,10 @@ public class GeneBankCreateBtree {
 		for(int i = 0; i < keyString.length()-1; i = i+2)
 		{
 			dna += keyString.substring(i, i+2);
-			dna = dna.replaceAll("00", "A");
-	        dna = dna.replaceAll("01", "C");
-	        dna = dna.replaceAll("10", "G");
-	        dna = dna.replaceAll("11", "T");
+			dna = dna.replaceAll("00", "a");
+	        dna = dna.replaceAll("01", "c");
+	        dna = dna.replaceAll("10", "g");
+	        dna = dna.replaceAll("11", "t");
 		}
 		return dna;
 	}
@@ -181,7 +181,7 @@ public class GeneBankCreateBtree {
     private static ArrayList<Long> createKeyValues(String dnaString, int size) {
     	ArrayList<Long> tokens = new ArrayList<Long>();
     	for(int i = 0; i< dnaString.length(); i++) {
-    		if(i+size < dnaString.length()){
+    		if(i+size <= dnaString.length()){
     		    String dnaSubstring = dnaString.substring(i, i + size);
     		    if(!dnaSubstring.contains("n")) {
                     String hold = "";
