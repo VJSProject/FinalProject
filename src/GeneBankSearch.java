@@ -16,7 +16,7 @@ public class GeneBankSearch {
 
         readTree = new BTree<Long>(1);
         try {
-        	if(debugLevel == 0)
+        	if(debugLevel < 0)
         		System.err.println("Building tree from file...");
         	readTree.readFromBinary(btreeFile);
         } catch (FileNotFoundException e) {
@@ -25,7 +25,7 @@ public class GeneBankSearch {
         }
         //if using cache
         if(usingCache) {
-        	if(debugLevel == 0)
+        	if(debugLevel < 0)
         		System.err.println("Cache enabled with size: "+cacheSize);
         	readTree.enableCache(cacheSize);
         }
@@ -42,7 +42,7 @@ public class GeneBankSearch {
                 seqBinary = seqBinary.replaceAll("[tT]", "11");
 
                 int feq = readTree.BTreeSearch(Long.parseLong(seqBinary));
-                System.out.print(sequence.toUpperCase() + ": ");
+                System.out.print(sequence.toLowerCase() + ": ");
                 if(feq < 0){
                     System.out.println("Pattern Not Found");
                 }
